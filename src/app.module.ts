@@ -5,8 +5,9 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { EventModule } from './event/event.module';
 import { HomeModule } from './home/home.module';
+import { BookModule } from './book/book.module';
   
 @Module({
-  imports: [AuthModule, UserModule, EventModule, HomeModule, PrismaModule, ConfigModule.forRoot({isGlobal:true})],
+  imports: [AuthModule, UserModule, EventModule, HomeModule, PrismaModule, ConfigModule.forRoot({isGlobal:true}), BookModule],
 })
 export class AppModule {}

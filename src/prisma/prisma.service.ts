@@ -19,6 +19,8 @@ export class PrismaService extends PrismaClient{
             this.eventRegistration.deleteMany(),
             this.event.deleteMany(),
             this.user.deleteMany(),
+             this.book.deleteMany(),        // <-- novo
+            this.user.deleteMany()
         ]);
     }
 }
