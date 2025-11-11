@@ -49,8 +49,11 @@ export class AuthService {
         const isPasswordValid = await argon.verify(user.passwordHash, dto.password);
         //se o password estiver incorreto, lancar excecao
         if(!isPasswordValid) throw new ForbiddenException('Credenciais incorretas'); 
-
-        return this.signToken(user.id,user.matricula,user.role);
+        const tokenData = await this.signToken(user.id, user.matricula, user.role);
+        return {
+        access_token: tokenData.access_token,
+        role: user.role                     
+    };
     }
 
     async signToken(
@@ -73,6 +76,7 @@ export class AuthService {
     );
         return {
             access_token: token,
+            
         };
     }
 
