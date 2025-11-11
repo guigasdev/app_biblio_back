@@ -6,6 +6,7 @@ import { PrismaClientKnownRequestError } from "@prisma/client/runtime/binary";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
 import { ChangePasswordDto } from './dto/password.dto';
+import { RoleEnum } from "@prisma/client";
 @Injectable()
 export class AuthService {
     constructor(private prisma:PrismaService,private jwt:JwtService, private config:ConfigService){}
@@ -24,7 +25,7 @@ export class AuthService {
                 // role padrão USER no schema
             },
         });
-        return this.signToken(user.id, user.email);
+        return this.signToken(user.id, user.email,user.role);
     }
         catch(error){
             if (error instanceof PrismaClientKnownRequestError) {
@@ -49,17 +50,18 @@ export class AuthService {
         //se o password estiver incorreto, lancar excecao
         if(!isPasswordValid) throw new ForbiddenException('Credenciais incorretas'); 
 
-        //se o password estiver correto, retornar o usuario
-        return this.signToken(user.id,user.matricula);
+        return this.signToken(user.id,user.matricula,user.role);
     }
 
     async signToken(
         userId : string,
-        matricula: string
+        matricula: string,
+        role : RoleEnum
     ): Promise<{ access_token: string }> {
         const payload = {
             sub: userId,
-            matricula:matricula
+            matricula:matricula,
+            role:role
         }
         const secret = this.config.get('JWT_SECRET');
 
