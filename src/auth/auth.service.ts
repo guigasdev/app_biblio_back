@@ -25,7 +25,7 @@ export class AuthService {
                 // role padrão USER no schema
             },
         });
-        return this.signToken(user.id, user.email);
+        return this.signToken(user.id, user.email,user.role);
     }
         catch(error){
             if (error instanceof PrismaClientKnownRequestError) {
