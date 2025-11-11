@@ -6,7 +6,6 @@ export class AuthDto{
     matricula: string;
     
     @IsEmail()
-    @IsNotEmpty()
     email:string;
 
     @IsString()
