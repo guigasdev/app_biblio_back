@@ -24,8 +24,9 @@ export class AuthDto{
 
 export class LoginDto{
     @IsString()
-    @IsOptional()
+    @IsNotEmpty()
     matricula?: string;
+    password?: string;
 
     @IsString()
     @IsOptional()
