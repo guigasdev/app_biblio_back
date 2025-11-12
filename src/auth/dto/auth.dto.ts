@@ -18,4 +18,8 @@ export class AuthDto{
     @IsString()
     @IsOptional()
     matricula?: string;
+
+    @IsString()
+    @IsOptional()
+    avatarImageId?: string | null;
 }

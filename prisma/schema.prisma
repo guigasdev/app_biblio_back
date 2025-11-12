@@ -25,6 +25,9 @@ model User {
   role         RoleEnum @default(USER)
 
   // Relations
+  avatarImageId String? @unique @map("avatar_image_id")
+  avatarImage   Image?  @relation("UserAvatar", fields: [avatarImageId], references: [id])
+
   events        Event[]           @relation("UserEvents") // events created by admin
   registrations EventRegistration[]
 
@@ -38,8 +41,9 @@ model Event {
   startTime   DateTime @map("start_time")
   endTime     DateTime @map("end_time")
   location    String
-  imageUrl    String?  @map("image_url")
   lecturers   String?
+  imageId     String?  @unique @map("image_id")
+  image       Image?   @relation("EventImage", fields: [imageId], references: [id])
 
   // Admin creator
   adminId String
@@ -61,4 +65,20 @@ model EventRegistration {
 
   @@id([userId, eventId])
   @@map("event_registrations")
+}
+
+model Image {
+  id           String   @id @default(uuid())
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt
+  originalName String   @map("original_name")
+  mimeType     String   @map("mime_type")
+  size         Int
+  blobName     String   @unique @map("blob_name")
+  url          String
+
+  event Event? @relation("EventImage")
+  user  User?  @relation("UserAvatar")
+
+  @@map("images")
 }

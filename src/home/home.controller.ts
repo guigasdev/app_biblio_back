@@ -10,6 +10,9 @@ export class HomeController {
     const events = await this.prisma.event.findMany({
       orderBy: { startTime: 'asc' },
       take: 5,
+      include: {
+        image: true,
+      },
     });
     return {
       message: 'Bem-vindo',

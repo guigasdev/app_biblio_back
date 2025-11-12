@@ -6,13 +6,28 @@ import { PrismaClientKnownRequestError } from "@prisma/client/runtime/binary";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
 import { ChangePasswordDto } from './dto/password.dto';
+import { ImageService } from "src/image/image.service";
 @Injectable()
 export class AuthService {
-    constructor(private prisma:PrismaService,private jwt:JwtService, private config:ConfigService){}
+    constructor(private prisma:PrismaService,private jwt:JwtService, private config:ConfigService, private readonly imageService: ImageService){}
+
+    private normalizeAvatarId(avatarImageId?: string | null): string | null | undefined{
+        if(typeof avatarImageId === 'undefined') return undefined;
+        if(avatarImageId === null) return null;
+        const trimmed = avatarImageId.trim();
+        if(!trimmed){
+            return null;
+        }
+        return trimmed;
+    }
 
     async signup(dto:AuthDto){
         //gerar o hash do password
         const hash = await argon.hash(dto.password);
+        const normalizedAvatarId = this.normalizeAvatarId(dto.avatarImageId);
+        if(typeof normalizedAvatarId === 'string'){
+            await this.imageService.findById(normalizedAvatarId);
+        }
         //salvar o novo usuario no banco de dados
         try{
         const user = await this.prisma.user.create({
@@ -21,6 +36,7 @@ export class AuthService {
                 passwordHash: hash,
                 name: dto.name ?? dto.email.split('@')[0],
                 matricula: dto.matricula ?? null,
+                avatarImageId: normalizedAvatarId ?? null,
                 // role padrão USER no schema
             },
         });

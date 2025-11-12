@@ -29,6 +29,7 @@ API NestJS para gestão de usuários e eventos (CRUD completo), com autenticaç�
 
 - **NestJS 11**, **TypeScript**, **Prisma** (PostgreSQL), **JWT**, **argon2**
 - Validação com `class-validator`, Guards de `JWT` e `Roles`
+- Upload de imagens via **Azure Blob Storage**
 
 ## Setup do projeto
 
@@ -55,7 +56,7 @@ $ npm run start:prod
 2) Rode as migrações e gere o client:
 
 ```bash
-npx prisma migrate dev --name init_events_roles
+npx prisma migrate dev
 npx prisma generate
 ```
 
@@ -87,6 +88,10 @@ npm run db:seed
   - POST `/events/:id/register` (JWT)
   - DELETE `/events/:id/register` (JWT)
   - GET `/events/:id/registrations` (JWT + ADMIN)
+- Imagens
+  - POST `/images` (JWT) → multipart `file` enviado para Blob Storage e persistido no banco
+  - GET `/images/:id`
+  - DELETE `/images/:id` (JWT + ADMIN)
 
 ## Modelos de Dados (Prisma)
 
@@ -97,6 +102,8 @@ erDiagram
   User ||--o{ Event : "cria (adminId)"
   User ||--o{ EventRegistration : "inscreve"
   Event ||--o{ EventRegistration : "tem inscrições"
+  Image ||--o| Event : "capa (imageId)"
+  Image ||--o| User : "avatar (avatarImageId)"
 
   User {
     string id PK
@@ -107,6 +114,7 @@ erDiagram
     enum RoleEnum
     datetime createdAt
     datetime updatedAt
+    string? avatarImageId FK -> Image.id
   }
 
   Event {
@@ -116,8 +124,8 @@ erDiagram
     datetime startTime
     datetime endTime
     string location
-    string imageUrl
-    string lecturers
+    string? imageId FK -> Image.id
+    string? lecturers
     string adminId FK -> User.id
   }
 
@@ -126,6 +134,17 @@ erDiagram
     string eventId FK -> Event.id
     datetime registeredAt
     PK "userId,eventId"
+  }
+
+  Image {
+    string id PK
+    string originalName
+    string mimeType
+    int size
+    string blobName UK
+    string url
+    datetime createdAt
+    datetime updatedAt
   }
 ```
 
@@ -159,9 +178,13 @@ flowchart LR
     UserModule
     EventModule --> PrismaService
     HomeModule --> PrismaService
+    ImageModule --> PrismaService
+    EventModule --> ImageModule
+    UserModule --> ImageModule
   end
 
   PrismaService -->|Prisma Client| PostgreSQL[(PostgreSQL)]
+  ImageModule --> AzureBlob[(Azure Blob Storage)]
 ```
 
 ## Segurança e Autorização
@@ -176,6 +199,8 @@ flowchart LR
 - `JWT_SECRET`: segredo para assinatura do token
 - `PORT`: porta da API (default 3000)
 - `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME`: seed do admin
+- `AZURE_STORAGE_CONNECTION_STRING`: string de conexão do Azure Blob Storage
+- `AZURE_STORAGE_CONTAINER`: (opcional) container utilizado para armazenar imagens (`images` por padrão)
 
 ## Scripts úteis
 
